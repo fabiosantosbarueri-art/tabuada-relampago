@@ -41,8 +41,8 @@ const $=id=>document.getElementById(id);
 const r=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
 document.addEventListener('keydown',e=>{if(e.key==='Enter'&&!$('tela-inicio').classList.contains('hide'))iniciar()});
 function areaProf(){const s=prompt('Senha do professor:');if(s==='3710'){$('tela-inicio').classList.add('hide');$('tela-prof').classList.remove('hide')}else if(s!==null)alert('Senha incorreta')}
-function gerar(){for(let k=0;k<30;k++){let a,b;if(k<10){a=r(2,5);b=r(2,5)}else if(k<20){a=r(3,7);b=r(4,7)}else{a=r(6,9);b=r(6,9)}if(Math.random()<.5)[a,b]=[b,a];
-const c=a*b,s=new Set([c]);const cand=[c+a,c-a,c+b,c-b,c+1,c-1,c+10,c-10,(a+1)*(b+1)];while(s.size<4){const v=cand[r(0,cand.length-1)];if(v>0)s.add(v)}
+function gerar(){const usados=new Set();const niv=[[3,6,4,9],[5,9,6,9],[6,9,7,12]];for(let k=0;k<30;k++){const n=niv[Math.floor(k/10)];let a,b,key,t=0;do{a=r(n[0],n[1]);b=r(n[2],n[3]);key=Math.min(a,b)+'x'+Math.max(a,b);t++}while(usados.has(key)&&t<500);usados.add(key);if(Math.random()<.5)[a,b]=[b,a];
+const c=a*b,s=new Set([c]);const cand=[c+a,c-a,c+b,c-b,c+1,c-1,c+2,c-2,c+10,c-10];while(s.size<4){const v=cand[r(0,cand.length-1)];if(v>0)s.add(v)}
 qs.push({a,b,c,ops:[...s].sort(()=>Math.random()-.5)})}}
 function iniciar(){nome=$('nome').value.trim();cham=$('chamada').value.trim();if(!nome||!cham){$('msg').textContent='Preencha o número de chamada e o nome.';return}
 gerar();$('tela-inicio').classList.add('hide');$('tela-quiz').classList.remove('hide');t0=Date.now();mostrar()}
