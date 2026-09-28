@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tabuada Relâmpago</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#1e3a8a;color:#111;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px}
+.card{background:#fff;border-radius:20px;padding:24px;width:100%;max-width:480px;text-align:center;box-shadow:0 10px 30px #0004}
+h1{margin:0 0 16px;color:#1e3a8a}input{width:100%;padding:14px;font-size:18px;margin:6px 0;border:2px solid #cbd5e1;border-radius:12px}
+button{padding:14px;font-size:18px;border:0;border-radius:12px;cursor:pointer}
+.main{background:#16a34a;color:#fff;width:100%;margin-top:8px}.prof{background:#e2e8f0;margin-top:14px;font-size:14px}
+.conta{font-size:56px;font-weight:bold;margin:12px 0;color:#1e3a8a}
+.ops{display:grid;grid-template-columns:1fr 1fr;gap:12px}.ops button{background:#fbbf24;font-size:28px;font-weight:bold}
+.bar{height:14px;background:#e2e8f0;border-radius:8px;overflow:hidden}.bar div{height:100%;background:#16a34a;transition:width .1s linear}
+.top{display:flex;justify-content:space-between;font-weight:bold;margin-bottom:8px}.tempo{font-size:32px;font-weight:bold}
+.ok{background:#16a34a!important;color:#fff}.no{background:#dc2626!important;color:#fff}
+.hide{display:none}.msg{color:#dc2626;min-height:20px}
+</style></head><body>
+<div class="card" id="tela-inicio">
+<h1>⚡ Tabuada Relâmpago</h1>
+<input id="chamada" type="number" placeholder="Número de chamada">
+<input id="nome" placeholder="Seu nome">
+<div class="msg" id="msg"></div>
+<button class="main" onclick="iniciar()">Começar (Enter)</button>
+<button class="prof" onclick="areaProf()">Área do professor</button>
+</div>
+<div class="card hide" id="tela-quiz">
+<div class="top"><span id="num"></span><span id="pts"></span></div>
+<div class="tempo" id="tempo"></div><div class="bar"><div id="barra"></div></div>
+<div class="conta" id="conta"></div><div class="ops" id="ops"></div>
+</div>
+<div class="card hide" id="tela-fim"></div>
+<div class="card hide" id="tela-prof">
+<h1>Área do professor</h1>
+<p>As notas de todos os alunos ficam na planilha de respostas.</p>
+<button class="main" onclick="window.open('https://docs.google.com/forms/d/1aC17bnFzLb0lu7FklwxLFx43wzPJgE4nG0LXpVzqrzI/edit#responses','_blank')">Ver notas dos alunos</button>
+<button class="prof" onclick="location.reload()">Voltar</button>
+</div>
+<script>
+const FORM="https://docs.google.com/forms/d/e/1FAIpQLScURjjj9htqHcjoKWYx4t0Bc1S9XHoOt1fRB4lYctNR85FsqQ/formResponse";
+let qs=[],i=0,acertos=0,banco=10,rest=0,timer,t0,nome,cham,livre=false;
+const $=id=>document.getElementById(id);
+const r=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&!$('tela-inicio').classList.contains('hide'))iniciar()});
+function areaProf(){const s=prompt('Senha do professor:');if(s==='3710'){$('tela-inicio').classList.add('hide');$('tela-prof').classList.remove('hide')}else if(s!==null)alert('Senha incorreta')}
+function gerar(){for(let k=0;k<30;k++){let a,b;if(k<10){a=r(2,5);b=r(2,5)}else if(k<20){a=r(3,7);b=r(4,7)}else{a=r(6,9);b=r(6,9)}if(Math.random()<.5)[a,b]=[b,a];
+const c=a*b,s=new Set([c]);const cand=[c+a,c-a,c+b,c-b,c+1,c-1,c+10,c-10,(a+1)*(b+1)];while(s.size<4){const v=cand[r(0,cand.length-1)];if(v>0)s.add(v)}
+qs.push({a,b,c,ops:[...s].sort(()=>Math.random()-.5)})}}
+function iniciar(){nome=$('nome').value.trim();cham=$('chamada').value.trim();if(!nome||!cham){$('msg').textContent='Preencha o número de chamada e o nome.';return}
+gerar();$('tela-inicio').classList.add('hide');$('tela-quiz').classList.remove('hide');t0=Date.now();mostrar()}
+function mostrar(){const q=qs[i];rest=banco;livre=true;$('num').textContent='Questão '+(i+1)+'/30';$('pts').textContent='Acertos: '+acertos;
+$('conta').textContent=q.a+' × '+q.b+' = ?';$('ops').innerHTML='';q.ops.forEach(v=>{const b=document.createElement('button');b.textContent=v;b.onclick=()=>resp(v,b);$('ops').appendChild(b)});
+const ini=Date.now(),tot=banco;clearInterval(timer);timer=setInterval(()=>{rest=Math.max(0,tot-(Date.now()-ini)/1000);$('tempo').textContent='⏱ '+rest.toFixed(1)+'s';$('barra').style.width=Math.min(100,rest/tot*100)+'%';if(rest<=0)resp(null,null)},100)}
+function resp(v,btn){if(!livre)return;livre=false;clearInterval(timer);const q=qs[i];
+[...$('ops').children].forEach(b=>{b.disabled=true;if(+b.textContent===q.c)b.classList.add('ok')});
+if(v===q.c){acertos++;banco=10+Math.floor(rest)}else{if(btn)btn.classList.add('no');banco=10}
+setTimeout(()=>{i++;i<30?mostrar():fim()},800)}
+function fim(){$('tela-quiz').classList.add('hide');const seg=Math.round((Date.now()-t0)/1000);
+$('tela-fim').classList.remove('hide');$('tela-fim').innerHTML='<h1>Parabéns, '+nome.replace(/</g,'')+'!</h1><div class="conta">'+acertos+'/30</div><p>Tempo total: '+seg+' segundos</p><p id="env">Enviando sua nota...</p>';
+const d=new URLSearchParams({'entry.1683444394':nome,'entry.1465719114':cham,'entry.1322673115':acertos+'/30','entry.774301586':seg+'s'});
+fetch(FORM,{method:'POST',mode:'no-cors',body:d}).then(()=>$('env').textContent='✅ Nota enviada ao professor!').catch(()=>$('env').textContent='⚠️ Não foi possível enviar. Avise o professor.')}
+</script></body></html>
